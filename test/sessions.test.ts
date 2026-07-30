@@ -9,6 +9,7 @@ import {
   release,
   SESSIONS_DIR,
   startupCleanup,
+  TMP_DIR,
 } from "../src/sessions";
 import { withTempDir } from "./helpers";
 
@@ -46,6 +47,18 @@ describe("session registry", () => {
       acquire("session-a");
       acquire("session-a");
       expect(getActiveSessions().length).toBe(1);
+    });
+
+    it("keeps path-like session IDs inside the sessions directory", () => {
+      const escapedPath = join(TMP_DIR, "gnome-session-inhibit.pid");
+
+      acquire("../gnome-session-inhibit.pid");
+
+      expect(existsSync(escapedPath)).toBe(false);
+      expect(getActiveSessions()).toEqual(["../gnome-session-inhibit.pid"]);
+
+      release("../gnome-session-inhibit.pid");
+      expect(getActiveSessions()).toEqual([]);
     });
   });
 
